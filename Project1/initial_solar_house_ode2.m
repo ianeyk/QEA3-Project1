@@ -48,6 +48,7 @@ T1i = 0;
 T2i = 0;
 Toutside = 0;
 
+dt2dT2s = [];
 [ts, Ts] = ode45(@odefun, [0, 4e6], [T1i; T2i]);
 
 Tair = (Ts(:, 1) - Ts(:, 2)) .* (R_2 + R_3) ./ (R_1 + R_2 + R_3) + Ts(:, 2);
@@ -75,6 +76,8 @@ legend("Floor Temperature", "Wall Temperature", "Inside Air Temperature", "locat
         
         dT1dt = Q_sun ./ C1 + (T2 - T1) ./ (R1 .* C1);
         dT2dt = (Toutside - T2) ./ (R2 .* C2) - (T2 - T1) ./ (R1 .* C2);
+        
+        dt2dT2s(end + 1) = dT2dt;
         
         dTdt = [dT1dt; dT2dt];
     end
