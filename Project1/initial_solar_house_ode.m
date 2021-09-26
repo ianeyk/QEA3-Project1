@@ -1,4 +1,4 @@
-function initial_solar_house_ode2()
+function initial_solar_house_ode()
 
 A_wall = 2 * (3 * 5.1) + 2 * (4 * 5.1) * 2 * (3 * 4); % surface area of all walls, m^2
 A_fiberglass = A_wall; % m^2
