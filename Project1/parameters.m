@@ -156,7 +156,7 @@ classdef parameters
             value = (obj.R1 * obj.T_outside_initial - obj.T_floor_final * obj.R2) / (-obj.R1 + obj.R2); % final temperature of the walls, degress C
         end
         function value = get.T_inside_final(obj)
-            value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * obj.R_1 / (obj.R_2 + obj.R_3);
+            value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R1;
         end
     end
 end
