@@ -1,17 +1,12 @@
 classdef parameters
     properties
         A_wall {mustBeNumeric}
-        A_fiberglass {mustBeNumeric}
         A_floor {mustBeNumeric}
         A_window {mustBeNumeric}
 
         thickness_wall {mustBeNumeric}
         thickness_fiberglass {mustBeNumeric}
         thickness_absorber {mustBeNumeric}
-
-        vol_brick {mustBeNumeric}
-        vol_fiberglass {mustBeNumeric}
-        vol_stone {mustBeNumeric}
 
         rho_wall {mustBeNumeric}
         rho_fiberglass {mustBeNumeric}
@@ -21,19 +16,34 @@ classdef parameters
         c_fiberglass {mustBeNumeric}
         c_absorber {mustBeNumeric}
 
-        C_wall {mustBeNumeric}
-        C_fiberglass {mustBeNumeric}
-        C_absorber {mustBeNumeric}
-
-        C1 {mustBeNumeric}
-        C2 {mustBeNumeric}
-
         k_wall {mustBeNumeric}
         k_fiberglass {mustBeNumeric}
         k_absorber {mustBeNumeric}
 
         h_indoor {mustBeNumeric}
         h_outdoor {mustBeNumeric}
+
+        sun_angle {mustBeNumeric}
+        T1i {mustBeNumeric}
+        T2i {mustBeNumeric}
+        Toutside {mustBeNumeric}
+    end
+
+    properties (Dependent)
+        A_fiberglass {mustBeNumeric}
+
+        Q_sun {mustBeNumeric}
+
+        vol_brick {mustBeNumeric}
+        vol_fiberglass {mustBeNumeric}
+        vol_stone {mustBeNumeric}
+
+        C_wall {mustBeNumeric}
+        C_fiberglass {mustBeNumeric}
+        C_absorber {mustBeNumeric}
+
+        C1 {mustBeNumeric}
+        C2 {mustBeNumeric}
 
         R_1 {mustBeNumeric}
         R_2 {mustBeNumeric}
@@ -42,12 +52,6 @@ classdef parameters
 
         R1 {mustBeNumeric}
         R2 {mustBeNumeric}
-
-        Q_sun {mustBeNumeric}
-        sun_angle {mustBeNumeric}
-        T1i {mustBeNumeric}
-        T2i {mustBeNumeric}
-        Toutside {mustBeNumeric}
     end
 
     methods
@@ -76,33 +80,68 @@ classdef parameters
             obj.h_outdoor = 30; % W/m^2/K
 
             obj.sun_angle = 25; % degrees
-            obj.Q_sun = 300 * obj.A_window * tand(obj.sun_angle); % W
-            obj.T1i = 0;
-            obj.T2i = 0;
-            obj.Toutside = 0;
+            obj.T1i = 0; % initial temperature of the floor, degress C
+            obj.T2i = 0; % initial temperature of the walls, degress C
+            obj.Toutside = 0; % degrees C
+        end
 
-            obj.A_fiberglass = obj.A_wall; % m^2
+        function value = get.A_fiberglass(obj)
+            value = obj.A_wall; % m^2
+        end
 
-            obj.vol_brick = obj.A_wall .* obj.thickness_wall; % m^3
-            obj.vol_fiberglass = obj.A_fiberglass .* obj.thickness_fiberglass; % m^3
-            obj.vol_stone = obj.A_floor .* obj.thickness_absorber; % m^3
+        function value = get.Q_sun(obj)
+            value = 300 * obj.A_window * tand(obj.sun_angle); % W
+        end
 
-            obj.C_wall = obj.vol_brick .* obj.rho_wall .* obj.c_wall;
-            obj.C_fiberglass = obj.vol_fiberglass .* obj.rho_fiberglass .* obj.c_fiberglass;
-            obj.C_absorber = obj.vol_stone .* obj.rho_absorber .* obj.c_absorber;
+        function value = get.vol_brick(obj)
+            value = obj.A_wall .* obj.thickness_wall; % m^3
+        end
+        function value = get.vol_fiberglass(obj)
+            value = obj.A_fiberglass .* obj.thickness_fiberglass; % m^3
+        end
+        function value = get.vol_stone(obj)
+            value = obj.A_floor .* obj.thickness_absorber; % m^3
+        end
 
-            obj.C1 = obj.C_absorber;
-            obj.C2 = obj.C_wall;
+
+        function value = get.C_wall(obj)
+            value = obj.vol_brick .* obj.rho_wall .* obj.c_wall;
+        end
+        function value = get.C_fiberglass(obj)
+            value = obj.vol_fiberglass .* obj.rho_fiberglass .* obj.c_fiberglass;
+        end
+        function value = get.C_absorber(obj)
+            value = obj.vol_stone .* obj.rho_absorber .* obj.c_absorber;
+        end
 
 
-            obj.R_1 = 1 ./ (obj.h_indoor .* obj.A_floor); % K / W
-            obj.R_2 = 1 ./ (obj.h_indoor .* obj.A_fiberglass); % K / W
-            obj.R_3 = obj.thickness_fiberglass ./ (obj.k_fiberglass .* obj.A_wall); % K / W
-            obj.R_4 = 1 ./ (obj.h_outdoor .* obj.A_wall); % K / W
+        function value = get.C1(obj)
+            value = obj.C_absorber;
+        end
+        function value = get.C2(obj)
+            value = obj.C_wall;
+        end
 
-            obj.R1 = obj.R_1 + obj.R_2 + obj.R_3;
-            obj.R2 = obj.R_4;
 
+        function value = get.R_1(obj)
+            value = 1 ./ (obj.h_indoor .* obj.A_floor); % K / W
+        end
+        function value = get.R_2(obj)
+            value = 1 ./ (obj.h_indoor .* obj.A_fiberglass); % K / W
+        end
+        function value = get.R_3(obj)
+            value = obj.thickness_fiberglass ./ (obj.k_fiberglass .* obj.A_wall); % K / W
+        end
+        function value = get.R_4(obj)
+            value = 1 ./ (obj.h_outdoor .* obj.A_wall); % K / W
+        end
+
+
+        function value = get.R1(obj)
+            value = obj.R_1 + obj.R_2 + obj.R_3;
+        end
+        function value = get.R2(obj)
+            value = obj.R_4;
         end
     end
 end
