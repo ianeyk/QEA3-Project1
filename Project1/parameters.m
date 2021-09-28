@@ -24,9 +24,9 @@ classdef parameters
         h_outdoor {mustBeNumeric}
 
         sun_angle {mustBeNumeric}
-        T1i {mustBeNumeric}
-        T2i {mustBeNumeric}
-        Toutside {mustBeNumeric}
+        T_floor_initial {mustBeNumeric}
+        T_walls_initial {mustBeNumeric}
+        T_outside_initial {mustBeNumeric}
     end
 
     properties (Dependent)
@@ -52,6 +52,10 @@ classdef parameters
 
         R1 {mustBeNumeric}
         R2 {mustBeNumeric}
+
+        T_floor_final {mustBeNumeric}
+        T_walls_final {mustBeNumeric}
+        T_inside_final {mustBeNumeric}
     end
 
     methods
@@ -80,9 +84,9 @@ classdef parameters
             obj.h_outdoor = 30; % W/m^2/K
 
             obj.sun_angle = 25; % degrees
-            obj.T1i = 0; % initial temperature of the floor, degress C
-            obj.T2i = 0; % initial temperature of the walls, degress C
-            obj.Toutside = 0; % degrees C
+            obj.T_floor_initial = 0; % initial temperature of the floor, degress C
+            obj.T_walls_initial = 0; % initial temperature of the walls, degress C
+            obj.T_outside_initial = 0; % degrees C
         end
 
         function value = get.A_fiberglass(obj)
@@ -142,6 +146,17 @@ classdef parameters
         end
         function value = get.R2(obj)
             value = obj.R_4;
+        end
+
+
+        function value = get.T_floor_final(obj)
+            value = -obj.Q_sun * (-obj.R2 - obj.R1) + obj.T_outside_initial; % final temperature of the floor, degress C
+        end
+        function value = get.T_walls_final(obj)
+            value = (obj.R1 * obj.T_outside_initial - obj.T_floor_final * obj.R2) / (-obj.R1 + obj.R2); % final temperature of the walls, degress C
+        end
+        function value = get.T_inside_final(obj)
+            value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * obj.R_1 / (obj.R_2 + obj.R_3);
         end
     end
 end
