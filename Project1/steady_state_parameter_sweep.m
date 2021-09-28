@@ -1,9 +1,11 @@
 load("parameters.mat");
 
-insulation_thickness_range = [0, 1];
-wall_thinckess_range = [0, 1];
+insulation_thickness_range = linspace(0, 1, 10); % meters
+wall_thinckess_range = linspace(0, 1, 10); % meters
 
-for itr = 1:length(insulation_thikness_range
+for it = 1:length(insulation_thickness_range)
+    insulation_thickness = insulation_thickness_range(it);
+    
 
     function Tinside = steady_state(t, T, R_1, R_2, R_3, Q_sun, Toutside)
         R1 = R_1 + R_2 + R_3;
