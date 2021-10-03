@@ -155,16 +155,25 @@ classdef parameters
         end
 
 
-        function value = get.T_vars_final(obj)
+        function value = T_inside(obj, T_absorber, T_wall)
+            value = T_wall + (T_absorber - T_wall) .* (obj.R_2 + obj.R_3) ./ obj.R_absorber_to_wall;
+        end
+
+        function [ts, Ts] = run_ode(obj)
             [ts, Ts] = ode45(@(t, T) odefun(obj, t, T), obj.timespan, repmat([obj.T_outside_initial], 2, 1));
+            Ts(:, end + 1) = obj.T_inside(Ts(:, 1), Ts(:, 2));
+        end
+
+        function value = get.T_vars_final(obj)
+            [ts, Ts] = obj.run_ode();
             value = Ts(end, :);
         end
 
         function value = get.T_floor_final(obj)
-            value = -obj.Q_sun * (-obj.R_wall_to_outside - obj.R_absorber_to_wall) + obj.T_outside_initial; % final temperature of the floor, degress C
+            value = obj.T_vars_final(1);
         end
         function value = get.T_walls_final(obj)
-            value = (obj.R_absorber_to_wall * obj.T_outside_initial - obj.T_floor_final * obj.R_wall_to_outside) / (-obj.R_absorber_to_wall + obj.R_wall_to_outside); % final temperature of the walls, degress C
+            value = obj.T_vars_final(2);
         end
         function value = get.T_inside_final(obj)
             value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R_absorber_to_wall;
@@ -178,10 +187,10 @@ classdef parameters
 
             dT_absorber_dt = obj.Q_sun ./ obj.C_absorber + ...
                 (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_absorber) + ...
-                (obj.T_outside_initial - T_absorber) ./ (R_window .* obj.C_absorber)
+                (obj.T_outside_initial - T_absorber) ./ (R_window .* obj.C_absorber);
 
             dT_wall_dt = - (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_wall) + ...
-                (obj.T_outside_initial - T_wall) ./ (obj.R_wall_to_outside .* obj.C_wall)
+                (obj.T_outside_initial - T_wall) ./ (obj.R_wall_to_outside .* obj.C_wall);
 
             dTdt = [dT_absorber_dt; dT_wall_dt];
         end
