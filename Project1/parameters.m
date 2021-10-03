@@ -27,6 +27,8 @@ classdef parameters
         T_floor_initial {mustBeNumeric}
         T_walls_initial {mustBeNumeric}
         T_outside_initial {mustBeNumeric}
+
+        timespan
     end
 
     properties (Dependent)
@@ -50,12 +52,14 @@ classdef parameters
         R_3 {mustBeNumeric}
         R_4 {mustBeNumeric}
 
-        R1 {mustBeNumeric}
-        R2 {mustBeNumeric}
+        R_absorber_to_wall {mustBeNumeric}
+        R_wall_to_outside {mustBeNumeric}
 
         T_floor_final {mustBeNumeric}
         T_walls_final {mustBeNumeric}
         T_inside_final {mustBeNumeric}
+
+        T_vars_final
     end
 
     methods
@@ -87,6 +91,8 @@ classdef parameters
             obj.T_floor_initial = 0; % initial temperature of the floor, degress C
             obj.T_walls_initial = 0; % initial temperature of the walls, degress C
             obj.T_outside_initial = 0; % degrees C
+
+            obj.timespan = [0, 1e6];
         end
 
         function value = get.A_fiberglass(obj)
@@ -141,22 +147,52 @@ classdef parameters
         end
 
 
-        function value = get.R1(obj)
+        function value = get.R_absorber_to_wall(obj)
             value = obj.R_1 + obj.R_2 + obj.R_3;
         end
-        function value = get.R2(obj)
+        function value = get.R_wall_to_outside(obj)
             value = obj.R_4;
         end
 
 
+        function value = T_inside(obj, T_absorber, T_wall)
+            value = T_wall + (T_absorber - T_wall) .* (obj.R_2 + obj.R_3) ./ obj.R_absorber_to_wall;
+        end
+
+        function [ts, Ts] = run_ode(obj)
+            [ts, Ts] = ode45(@(t, T) odefun(obj, t, T), obj.timespan, repmat([obj.T_outside_initial], 2, 1));
+            Ts(:, end + 1) = obj.T_inside(Ts(:, 1), Ts(:, 2));
+        end
+
+        function value = get.T_vars_final(obj)
+            [ts, Ts] = obj.run_ode();
+            value = Ts(end, :);
+        end
+
         function value = get.T_floor_final(obj)
-            value = -obj.Q_sun * (-obj.R2 - obj.R1) + obj.T_outside_initial; % final temperature of the floor, degress C
+            value = obj.T_vars_final(1);
         end
         function value = get.T_walls_final(obj)
-            value = (obj.R1 * obj.T_outside_initial - obj.T_floor_final * obj.R2) / (-obj.R1 + obj.R2); % final temperature of the walls, degress C
+            value = obj.T_vars_final(2);
         end
         function value = get.T_inside_final(obj)
-            value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R1;
+            value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R_absorber_to_wall;
+        end
+
+        function dTdt = odefun(obj, t, T)
+            T_absorber = T(1);
+            T_wall = T(2);
+
+            R_window = Inf;
+
+            dT_absorber_dt = obj.Q_sun ./ obj.C_absorber + ...
+                (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_absorber) + ...
+                (obj.T_outside_initial - T_absorber) ./ (R_window .* obj.C_absorber);
+
+            dT_wall_dt = - (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_wall) + ...
+                (obj.T_outside_initial - T_wall) ./ (obj.R_wall_to_outside .* obj.C_wall);
+
+            dTdt = [dT_absorber_dt; dT_wall_dt];
         end
     end
 end
