@@ -51,9 +51,11 @@ classdef parameters
         R_2 {mustBeNumeric}
         R_3 {mustBeNumeric}
         R_4 {mustBeNumeric}
+        R_window {mustBeNumeric}
 
         R_absorber_to_wall {mustBeNumeric}
         R_wall_to_outside {mustBeNumeric}
+        R_absorber_through_window {mustBeNumeric}
 
         T_floor_final {mustBeNumeric}
         T_walls_final {mustBeNumeric}
@@ -145,6 +147,11 @@ classdef parameters
         function value = get.R_4(obj)
             value = 1 ./ (obj.h_outdoor .* obj.A_wall); % K / W
         end
+        function value = get.R_window(obj)
+            U_factor = 1.92; % https://engineer-educators.com/topic/8-heat-transfer-through-windows/, Table 19
+            value = 1 ./ (U_factor .* obj.A_window); % K / W
+            % value = Inf;
+        end
 
 
         function value = get.R_absorber_to_wall(obj)
@@ -152,6 +159,11 @@ classdef parameters
         end
         function value = get.R_wall_to_outside(obj)
             value = obj.R_4;
+        end
+
+
+        function value = get.R_absorber_through_window(obj)
+            value = obj.R_1 + obj.R_window + obj.R_4;
         end
 
 
@@ -187,7 +199,7 @@ classdef parameters
 
             dT_absorber_dt = obj.Q_sun ./ obj.C_absorber + ...
                 (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_absorber) + ...
-                (obj.T_outside_initial - T_absorber) ./ (R_window .* obj.C_absorber);
+                (obj.T_outside_initial - T_absorber) ./ (obj.R_absorber_through_window .* obj.C_absorber);
 
             dT_wall_dt = - (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_wall) + ...
                 (obj.T_outside_initial - T_wall) ./ (obj.R_wall_to_outside .* obj.C_wall);
