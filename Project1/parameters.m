@@ -195,8 +195,6 @@ classdef parameters
             T_absorber = T(1);
             T_wall = T(2);
 
-            R_window = Inf;
-
             dT_absorber_dt = obj.Q_sun ./ obj.C_absorber + ...
                 (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_absorber) + ...
                 (obj.T_outside_initial - T_absorber) ./ (obj.R_absorber_through_window .* obj.C_absorber);
