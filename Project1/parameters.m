@@ -174,7 +174,9 @@ classdef parameters
 
         function value = get.T_vars_final(obj)
             [ts, Ts] = obj.run_ode();
-            value = Ts(end, :);
+
+            last_day = Ts(ts > ts(end) - 24 .* 3600, :);
+            value = mean(last_day);
         end
 
         function value = get.T_floor_final(obj)
@@ -184,7 +186,8 @@ classdef parameters
             value = obj.T_vars_final(2);
         end
         function value = get.T_inside_final(obj)
-            value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R_absorber_to_wall;
+            value = obj.T_vars_final(3);
+            % value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R_absorber_to_wall;
         end
 
         function Q_sun = Q_sun_of_t(obj, t)
