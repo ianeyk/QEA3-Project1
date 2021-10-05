@@ -230,9 +230,13 @@ classdef parameters
             clf;
             hold on;
 
-            plot(ts, T_absorber, 'r-');
+            plot(ts, T_absorber, 'y-');
             plot(ts, T_wall, 'b-');
-            plot(ts, T_inside, 'y-');
+            plot(ts, T_inside, 'r-');
+
+            xlabel("time (s)");
+            ylabel("Temperature (^oC)");
+            legend("Absorber", "Wall", "Inside");
         end
     end
 end
