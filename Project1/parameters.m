@@ -67,7 +67,7 @@ classdef parameters
     methods
         function obj = parameters()
             obj.A_wall = 2 * (3 * 5.1) + 2 * (4 * 5.1) + 2 * (3 * 4); % surface area of all walls, m^2
-            obj.A_floor =  2 * (5.4 * 4); % surface area of heat absorber, top and bottom, m^2
+            obj.A_floor = 2 * (5.4 * 4); % surface area of heat absorber, top, m^2
             obj.A_window = 4 * 3; % m^2
 
             obj.thickness_wall = 0.1; % m
@@ -112,7 +112,7 @@ classdef parameters
             value = obj.A_fiberglass .* obj.thickness_fiberglass; % m^3
         end
         function value = get.vol_stone(obj)
-            value = obj.A_floor .* obj.thickness_absorber; % m^3
+            value = obj.A_floor ./ 2 .* obj.thickness_absorber; % m^3
         end
 
 
