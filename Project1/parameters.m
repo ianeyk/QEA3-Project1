@@ -62,6 +62,7 @@ classdef parameters
         T_inside_final {mustBeNumeric}
 
         T_vars_final
+        T_vars_last_day
     end
 
     methods
@@ -171,12 +172,13 @@ classdef parameters
             value = T_wall + (T_absorber - T_wall) .* (obj.R_2 + obj.R_3) ./ obj.R_absorber_to_wall;
         end
 
+        function T_last_day = get.T_vars_last_day(obj)
+            [ts, Ts] = obj.run_ode();
+            T_last_day = Ts(ts > ts(end) - 24 .* 3600, :);
+        end
 
         function value = get.T_vars_final(obj)
-            [ts, Ts] = obj.run_ode();
-
-            last_day = Ts(ts > ts(end) - 24 .* 3600, :);
-            value = mean(last_day);
+            value = mean(obj.T_vars_last_day);
         end
 
         function value = get.T_floor_final(obj)
@@ -229,6 +231,11 @@ classdef parameters
             T_wall = Ts(:, 2);
             T_inside = Ts(:, 3);
 
+            T_last_day = obj.T_vars_last_day;
+
+            T_inside_min = min(T_last_day(:, 3));
+            T_inside_max = max(T_last_day(:, 3));
+
             figure(fig_num);
             clf;
             hold on;
@@ -237,9 +244,12 @@ classdef parameters
             plot(ts, T_wall, 'b-');
             plot(ts, T_inside, 'r-');
 
+            yline(T_inside_min, 'k--');
+            yline(T_inside_max, 'k--');
+
             xlabel("time (s)");
             ylabel("Temperature (^oC)");
-            legend("Absorber", "Wall", "Inside");
+            legend("Absorber", "Wall", "Inside", "location", "east");
         end
     end
 end
