@@ -66,7 +66,7 @@ classdef parameters
 
     methods
         function obj = parameters()
-            obj.A_wall = 2 * (3 * 5.1) + 2 * (4 * 5.1) * 2 * (3 * 4); % surface area of all walls, m^2
+            obj.A_wall = 2 * (3 * 5.1) + 2 * (4 * 5.1) + 2 * (3 * 4); % surface area of all walls, m^2
             obj.A_floor =  2 * (5.4 * 4); % surface area of heat absorber, top and bottom, m^2
             obj.A_window = 4 * 3; % m^2
 
