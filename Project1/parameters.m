@@ -68,11 +68,11 @@ classdef parameters
         function obj = parameters()
             obj.A_wall = 2 * (3 * 5.1) + 2 * (4 * 5.1) * 2 * (3 * 4); % surface area of all walls, m^2
             obj.A_floor =  2 * (5.4 * 4); % surface area of heat absorber, top and bottom, m^2
-            obj.A_window = 4 * 3; % m^2
+            obj.A_window = 4 * 5; % m^2
 
             obj.thickness_wall = 0.1; % m
-            obj.thickness_fiberglass = 0.25; % m
-            obj.thickness_absorber = 0.1; % m
+            obj.thickness_fiberglass = 0.2; % m
+            obj.thickness_absorber = 0.15; % m
 
             obj.rho_wall = 2000; % kg/m^3
             obj.rho_fiberglass = 12; % kg/m^3
@@ -92,7 +92,7 @@ classdef parameters
             obj.sun_angle = 25; % degrees
             obj.T_floor_initial = 0; % initial temperature of the floor, degress C
             obj.T_walls_initial = 0; % initial temperature of the walls, degress C
-            obj.T_outside_initial = 0; % degrees C
+            obj.T_outside_initial = -3.0; % degrees C
 
             obj.timespan = [0, 1e6];
         end
@@ -148,7 +148,7 @@ classdef parameters
             value = 1 ./ (obj.h_outdoor .* obj.A_wall); % K / W
         end
         function value = get.R_window(obj)
-            U_factor = 1.92; % https://engineer-educators.com/topic/8-heat-transfer-through-windows/, Table 19
+            U_factor = 1.01; % https://engineer-educators.com/topic/8-heat-transfer-through-windows/, Table 19
             value = 1 ./ (U_factor .* obj.A_window); % K / W
             % value = Inf;
         end
