@@ -171,10 +171,6 @@ classdef parameters
             value = T_wall + (T_absorber - T_wall) .* (obj.R_2 + obj.R_3) ./ obj.R_absorber_to_wall;
         end
 
-        function [ts, Ts] = run_ode(obj)
-            [ts, Ts] = ode45(@(t, T) odefun(obj, t, T), obj.timespan, repmat([obj.T_outside_initial], 2, 1));
-            Ts(:, end + 1) = obj.T_inside(Ts(:, 1), Ts(:, 2));
-        end
 
         function value = get.T_vars_final(obj)
             [ts, Ts] = obj.run_ode();
@@ -191,18 +187,52 @@ classdef parameters
             value = obj.T_walls_final + (obj.T_floor_final - obj.T_walls_final) * (obj.R_2 + obj.R_3) / obj.R_absorber_to_wall;
         end
 
+        function Q_sun = Q_sun_of_t(obj, t)
+            Q_sun_per_m2 = -361 .* cos(pi .* t / (12 .* 3600)) + 224 .* cos(pi .* t / (6 .* 3600)) + 210;
+            Q_sun = Q_sun_per_m2 .* obj.A_window;
+        end
+
         function dTdt = odefun(obj, t, T)
             T_absorber = T(1);
             T_wall = T(2);
 
-            dT_absorber_dt = obj.Q_sun ./ obj.C_absorber + ...
-                (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_absorber) + ...
-                (obj.T_outside_initial - T_absorber) ./ (obj.R_absorber_through_window .* obj.C_absorber);
+            dT_absorber_dt = obj.Q_sun_of_t(t) ./ obj.C_absorber + ...
+            (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_absorber) + ...
+            (obj.T_outside_initial - T_absorber) ./ (obj.R_absorber_through_window .* obj.C_absorber);
 
             dT_wall_dt = - (T_wall - T_absorber) ./ (obj.R_absorber_to_wall .* obj.C_wall) + ...
-                (obj.T_outside_initial - T_wall) ./ (obj.R_wall_to_outside .* obj.C_wall);
+            (obj.T_outside_initial - T_wall) ./ (obj.R_wall_to_outside .* obj.C_wall);
 
             dTdt = [dT_absorber_dt; dT_wall_dt];
+        end
+
+        function [ts, Ts] = run_ode(obj)
+            [ts, Ts] = ode45(@(t, T) odefun(obj, t, T), obj.timespan, repmat([obj.T_outside_initial], 2, 1));
+            Ts(:, end + 1) = obj.T_inside(Ts(:, 1), Ts(:, 2));
+        end
+
+        function plot_ode(obj, varargin)
+            nargin
+            if nargin == 2
+                fig_cell = varargin(1);
+                fig_num = fig_cell{1};
+            else
+                fig_num = 1;
+            end
+
+            [ts, Ts] = obj.run_ode();
+
+            T_absorber = Ts(:, 1);
+            T_wall = Ts(:, 2);
+            T_inside = Ts(:, 3);
+
+            figure(fig_num);
+            clf;
+            hold on;
+
+            plot(ts, T_absorber, 'r-');
+            plot(ts, T_wall, 'b-');
+            plot(ts, T_inside, 'y-');
         end
     end
 end
