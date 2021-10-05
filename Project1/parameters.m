@@ -102,7 +102,7 @@ classdef parameters
         end
 
         function value = get.Q_sun(obj)
-            value = 300 * obj.A_window * tand(obj.sun_angle); % W
+            value = 210 * obj.A_window % * tand(obj.sun_angle); % W
         end
 
         function value = get.vol_brick(obj)
