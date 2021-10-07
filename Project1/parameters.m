@@ -1,6 +1,6 @@
 classdef parameters
     properties
-        A_wall {mustBeNumeric}
+        A_wall_i {mustBeNumeric}
         A_floor {mustBeNumeric}
         A_window {mustBeNumeric}
 
@@ -32,6 +32,7 @@ classdef parameters
     end
 
     properties (Dependent)
+        A_wall
         A_fiberglass {mustBeNumeric}
 
         Q_sun {mustBeNumeric}
@@ -63,11 +64,12 @@ classdef parameters
 
         T_vars_final
         T_vars_last_day
+        ts_last_day
     end
 
     methods
         function obj = parameters()
-            obj.A_wall = 2 * (3 * 5.1) + 2 * (4 * 5.1) + 2 * (3 * 4); % surface area of all walls, m^2
+            obj.A_wall_i = 2 * (3 * 5.1) + 2 * (4 * 5.1) + 2 * (3 * 4); % surface area of all walls, m^2
             obj.A_window = 2.5 * 2; % m^2
             obj.A_floor = 2 * (5.4 * 4); % surface area of heat absorber, top, m^2
 
@@ -96,6 +98,10 @@ classdef parameters
             obj.T_outside_initial = -3.0; % degrees C
 
             obj.timespan = [0, 1e6];
+        end
+
+        function value = get.A_wall(obj)
+            value = obj.A_wall_i - obj.A_window; % m^2
         end
 
         function value = get.A_fiberglass(obj)
@@ -172,6 +178,11 @@ classdef parameters
             value = T_wall + (T_absorber - T_wall) .* (obj.R_2 + obj.R_3) ./ obj.R_absorber_to_wall;
         end
 
+        function t_last_day = get.ts_last_day(obj)
+            [ts, Ts] = obj.run_ode();
+            t_last_day = ts(ts > ts(end) - 24 .* 3600, :);
+        end
+
         function T_last_day = get.T_vars_last_day(obj)
             [ts, Ts] = obj.run_ode();
             T_last_day = Ts(ts > ts(end) - 24 .* 3600, :);
@@ -226,6 +237,7 @@ classdef parameters
             end
 
             [ts, Ts] = obj.run_ode();
+            ts = ts ./ 60 ./ 60 ./ 24
 
             T_absorber = Ts(:, 1);
             T_wall = Ts(:, 2);
@@ -247,7 +259,43 @@ classdef parameters
             yline(T_inside_min, 'k--');
             yline(T_inside_max, 'k--');
 
-            xlabel("time (s)");
+            xlabel("time (days)");
+            ylabel("Temperature (^oC)");
+            legend("Absorber", "Wall", "Inside", "location", "east");
+        end
+
+        function plot_last_day(obj, varargin)
+            if nargin == 2
+                fig_cell = varargin(1);
+                fig_num = fig_cell{1};
+            else
+                fig_num = 1;
+            end
+
+            ts = obj.ts_last_day ./ 60 ./ 60;
+            ts = ts - ts(1);
+
+            T_last_day = obj.T_vars_last_day;
+
+            T_absorber = T_last_day(:, 1);
+            T_wall = T_last_day(:, 2);
+            T_inside = T_last_day(:, 3);
+
+            T_inside_min = min(T_last_day(:, 3));
+            T_inside_max = max(T_last_day(:, 3));
+
+            figure(fig_num);
+            clf;
+            hold on;
+
+            plot(ts, T_absorber, 'y-');
+            plot(ts, T_wall, 'b-');
+            plot(ts, T_inside, 'r-');
+
+            yline(T_inside_min, 'k--');
+            yline(T_inside_max, 'k--');
+
+            xlabel("time (hours)");
             ylabel("Temperature (^oC)");
             legend("Absorber", "Wall", "Inside", "location", "east");
         end
