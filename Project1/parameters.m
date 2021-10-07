@@ -73,7 +73,7 @@ classdef parameters
 
             obj.thickness_wall = 0.1; % m
             obj.thickness_fiberglass = 0.1; % m
-            obj.thickness_absorber = 0.1; % m
+            obj.thickness_absorber = 0.3; % m
 
             obj.rho_wall = 2000; % kg/m^3
             obj.rho_fiberglass = 12; % kg/m^3
