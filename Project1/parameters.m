@@ -71,7 +71,7 @@ classdef parameters
         function obj = parameters()
             obj.A_wall_i = 2 * (3 * 5.1) + 2 * (4 * 5.1) + 2 * (3 * 4); % surface area of all walls, m^2
             obj.A_window = 2.5 * 2; % m^2
-            obj.A_floor = 2 * (5.4 * 4); % surface area of heat absorber, top, m^2
+            obj.A_floor = 2 * (5.1 * 4); % surface area of heat absorber, top, m^2
 
             obj.thickness_wall = 0.1; % m
             obj.thickness_fiberglass = 0.1; % m
